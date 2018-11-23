@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Workhard</string>
+    <string name="position" translatable="false">position</string>
+    <string name="title">Title</string>
+    <string name="stats">Stats</string>
+    <string name="options">Options</string>
+    <string name="about">About</string>
+    <string name="time">time</string>
+    <string name="work">work</string>
+    <string name="work_finish">workFinish</string>
+    <string name="pause">pause</string>
+    <string name="pause_finish">pauseFinish</string>
+    <string name="timer_service">timer service</string>
+    <string name="remaining_time">remaining_time</string>
+    <string name="remaining_time_finish">remaining_time_finish</string>
+    <string name="timerService">timer_service</string>
+    <string name="workHardNotification">work_hard_notification</string>
+    <string name="set">Set</string>
+    <string name="cancel">Cancel</string>
+    <string name="max_work">maxWork</string>
+    <string name="max_pause">maxPause</string>
+</resources>

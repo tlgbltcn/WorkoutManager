@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#3FBA91</color>
+
+    <color name="button_border">#a7a7a7</color>
+    <color name="colorAccentOrange">#ff3c57</color>
+    <color name="colorAccentFluMat">#3d7462</color>
+    <color name="colorAccentFlu">#3FBA91</color>
+    <color name="floatingActionButton">#353837</color>
+    <color name="windowBackground">#424544</color>
+    <color name="line">#30424544</color>
+
+    <color name="colorAccentFluLight">#fdeb63</color>
+    <color name="white">#FFFFFF</color>
+
+</resources>
