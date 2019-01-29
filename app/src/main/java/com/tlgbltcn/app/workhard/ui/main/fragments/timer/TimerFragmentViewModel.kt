@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.databinding.ObservableField
 import com.tlgbltcn.app.workhard.App
 import com.tlgbltcn.app.workhard.core.BaseViewModel
-import kotlinx.coroutines.experimental.async
+import org.jetbrains.anko.doAsync
 
 class TimerFragmentViewModel(app : Application) : BaseViewModel(app){
 
@@ -20,7 +20,7 @@ class TimerFragmentViewModel(app : Application) : BaseViewModel(app){
 
 
     fun initializedText(maxTime : Int){
-        async {
+        doAsync {
             for(i in 0..maxTime){
                 remainingTime.set(i.toString())
                 Thread.sleep(25)

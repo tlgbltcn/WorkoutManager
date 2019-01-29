@@ -25,11 +25,10 @@ import com.tlgbltcn.app.workhard.db.entities.Stats
 import com.tlgbltcn.app.workhard.ui.main.fragments.bottom.ManageFragments
 import com.tlgbltcn.app.workhard.utils.extensions.loadFragment
 import com.tlgbltcn.app.workhard.utils.service.AppConstant
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
+
 import org.jetbrains.anko.coroutines.experimental.bg
+import org.jetbrains.anko.doAsync
 
 
 class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(MainActivityViewModel::class.java), OnClickCallBack, ManageFragments {
@@ -91,13 +90,19 @@ class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(Ma
     }
 
     private fun initDb() {
-        async(UI){
-            val data : Deferred<Any> = bg{
+        doAsync{
+
+            /*
+            * val data : Deferred<Any> = bg{
                 isAnyData =  db.exampleDao().getCount()}
             data.await().let {
-                if(isAnyData == 0) stats = Stats(0,0) }}
+                if(isAnyData == 0) stats = Stats(0,0) }
+            * */
+            }
 
-        bg { db.statsDao().updateStats(stats) }
+        //bg {
+        //    db.statsDao().updateStats(stats)
+        //}
     }
 
     private fun initMinutes() {
@@ -305,9 +310,11 @@ class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(Ma
         stats.id = 0
         var cycleCount = 0
         runBlocking {
+            /*
             bg { cycleCount =  db.statsDao().isAnyData(0) }.await()
             stats.cycle = cycleCount + 1
             bg { db.statsDao().updateStats(stats) }
+            * */
         }
     }
 
