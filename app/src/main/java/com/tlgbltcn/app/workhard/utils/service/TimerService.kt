@@ -13,30 +13,28 @@ import com.tlgbltcn.app.workhard.R
 
 class TimerService : Service() {
 
-
     private lateinit var countDownTimer: CountDownTimer
     private val NOTIFICATION = R.string.timer_service
-    var notificationManager : NotificationManager? = null
-    private var notification : Notification? = null
+    var notificationManager: NotificationManager? = null
+    private var notification: Notification? = null
     val localIntent = Intent()
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val dataWork = intent?.getLongExtra(getString(R.string.work), -1)
-        val dataBreak = intent?.getLongExtra(getString(R.string.pause),-1)
-        var countDownTime: Long
-        var sendExtraString: String
-        var sendExtraStringFinish: String
+        val dataBreak = intent?.getLongExtra(getString(R.string.pause), -1)
+        val countDownTime: Long
+        val sendExtraString: String
+        val sendExtraStringFinish: String
         countDownTime = if (dataWork!! > dataBreak!!) dataWork else dataBreak
         sendExtraString = if (dataWork > dataBreak) getString(R.string.work) else getString(R.string.pause)
         sendExtraStringFinish = if (dataWork > dataBreak) getString(R.string.work_finish) else getString(R.string.pause_finish)
 
         localIntent.action = AppConstant.SERVICE_TAG
-        countDownTimer = object : CountDownTimer(countDownTime,1000) {
+        countDownTimer = object : CountDownTimer(countDownTime, 1000) {
             override fun onFinish() {
                 localIntent.putExtra(sendExtraStringFinish, 0.toString())
                 localIntent.action = sendExtraStringFinish
@@ -44,7 +42,7 @@ class TimerService : Service() {
             }
 
             override fun onTick(millisUntilFinished: Long) {
-                val remainingMinutes : Int = ((millisUntilFinished / 1000) / 60).toInt()
+                val remainingMinutes: Int = ((millisUntilFinished / 1000) / 60).toInt()
                 localIntent.putExtra(sendExtraString, remainingMinutes)
                 localIntent.action = sendExtraString
                 sendBroadcast(localIntent)
@@ -52,29 +50,25 @@ class TimerService : Service() {
 
         }.start()
 
-
         showNotification()
 
         return START_STICKY
     }
 
-
     override fun onDestroy() {
         countDownTimer.cancel()
     }
 
-
     private fun showNotification() {
 
-        val channelId = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+        val channelId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel()
-        }else{
+        } else {
             ""
         }
 
         val intent = Intent(this, TimerService::class.java)
         val pIntent = PendingIntent.getActivity(this, 0, intent, 0)
-
 
         notification = NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.drawable.ic_stop_black_24dp)
@@ -90,12 +84,12 @@ class TimerService : Service() {
         notificationManager = getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager?
 
         notificationManager!!.notify(NOTIFICATION, notification)
-        startForeground(1,notification)
+        startForeground(1, notification)
 
     }
 
     @TargetApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannel() : String {
+    private fun createNotificationChannel(): String {
         val channelId = getString(R.string.timerService)
         val channelName = getString(R.string.workHardNotification)
         val chan = NotificationChannel(channelId,

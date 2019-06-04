@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/WorkoutManager.iml" filepath="$PROJECT_DIR$/WorkoutManager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/WorkoutManager.iml" filepath="$PROJECT_DIR$/.idea/WorkoutManager.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/workhard.iml" filepath="$PROJECT_DIR$/workhard.iml" />
     </modules>
   </component>
 </project>

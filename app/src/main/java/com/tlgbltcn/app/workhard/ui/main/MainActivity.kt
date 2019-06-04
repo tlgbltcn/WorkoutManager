@@ -5,31 +5,29 @@ import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.tlgbltcn.app.workhard.App
 import com.tlgbltcn.app.workhard.R
 import com.tlgbltcn.app.workhard.core.BaseActivity
 import com.tlgbltcn.app.workhard.databinding.ActivityMainBinding
-import com.tlgbltcn.app.workhard.ui.main.fragments.bottom.BottomNavigationDrawerFragment
-import com.tlgbltcn.app.workhard.ui.main.fragments.timer.TimerFragment
-import com.tlgbltcn.app.workhard.utils.extensions.replaceFragmentInActivity
-import com.tlgbltcn.app.workhard.utils.extensions.simpleToolbarWithHome
-import com.tlgbltcn.app.workhard.utils.service.TimerService
-import javax.inject.Inject
-import android.content.Intent
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import com.tlgbltcn.app.workhard.db.AppDatabase
 import com.tlgbltcn.app.workhard.db.entities.Stats
+import com.tlgbltcn.app.workhard.ui.main.fragments.bottom.BottomNavigationDrawerFragment
 import com.tlgbltcn.app.workhard.ui.main.fragments.bottom.ManageFragments
+import com.tlgbltcn.app.workhard.ui.main.fragments.timer.TimerFragment
+import com.tlgbltcn.app.workhard.ui.main.fragments.timer.TimerFragment.Companion.ARGUMENT_FRAGMENT
 import com.tlgbltcn.app.workhard.utils.extensions.loadFragment
+import com.tlgbltcn.app.workhard.utils.extensions.replaceFragmentInActivity
+import com.tlgbltcn.app.workhard.utils.extensions.simpleToolbarWithHome
 import com.tlgbltcn.app.workhard.utils.service.AppConstant
-import kotlinx.coroutines.runBlocking
-
-import org.jetbrains.anko.coroutines.experimental.bg
-import org.jetbrains.anko.doAsync
-
+import com.tlgbltcn.app.workhard.utils.service.AppConstant.ABOUT_FRAGMENT
+import com.tlgbltcn.app.workhard.utils.service.AppConstant.STATS_FRAGMENT
+import com.tlgbltcn.app.workhard.utils.service.AppConstant.TIMER_FRAGMENT
+import com.tlgbltcn.app.workhard.utils.service.TimerService
+import javax.inject.Inject
 
 class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(MainActivityViewModel::class.java), OnClickCallBack, ManageFragments {
 
@@ -37,18 +35,19 @@ class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(Ma
     lateinit var pref: SharedPreferences
     @Inject
     lateinit var db: AppDatabase
-    var isAnyData : Int = 0
     lateinit var stats: Stats
-    var isService = false
-    var isReceiver = false
+    private var isService = false
+    private var isReceiverWork = false
     private lateinit var bottomNavigationDrawerFragment: BottomNavigationDrawerFragment
     private var sharedViewModel: SharedViewModel? = null
     private lateinit var updateUIReceiver: BroadcastReceiver
-    var maxValueWork = 2400000L
-    var maxValuePause = 600000L
-    var maxWork : Int = 0
-    var maxPause : Int = 0
-    var fabOnFragment = AppConstant.TIMER_FRAGMENT
+    private var maxValueWork = WORK_TIME
+    private var maxValuePause = BREAK_TIME
+    private var maxWork: Int = 0
+    private var maxPause: Int = 0
+    private var cycleCount: Int = 0
+    private var whichFragment = TIMER_FRAGMENT
+
     override fun initViewModel(viewModel: MainActivityViewModel) {
         binding.viewModel = viewModel
         binding.handler = this
@@ -59,17 +58,16 @@ class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(Ma
 
     override fun changeFragment(tag: String) {
         when (tag) {
-            AppConstant.STATS_FRAGMENT -> {
-                fabOnFragment = AppConstant.STATS_FRAGMENT
+            STATS_FRAGMENT -> {
+                whichFragment = STATS_FRAGMENT
                 binding.appbar.fabAlignmentMode = BottomAppBar.FAB_ALIGNMENT_MODE_END
                 binding.fabBar.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_arrow_back_black_36dp))
             }
-            AppConstant.ABOUT_FRAGMENT -> {
-                fabOnFragment = AppConstant.ABOUT_FRAGMENT
+            ABOUT_FRAGMENT -> {
+                whichFragment = ABOUT_FRAGMENT
                 binding.appbar.fabAlignmentMode = BottomAppBar.FAB_ALIGNMENT_MODE_END
                 binding.fabBar.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_arrow_back_black_36dp))
             }
-
         }
     }
 
@@ -86,33 +84,22 @@ class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(Ma
         initDb()
         initMinutes()
         initFragment()
-
     }
 
     private fun initDb() {
-        doAsync{
-
-            /*
-            * val data : Deferred<Any> = bg{
-                isAnyData =  db.exampleDao().getCount()}
-            data.await().let {
-                if(isAnyData == 0) stats = Stats(0,0) }
-            * */
-            }
-
-        //bg {
-        //    db.statsDao().updateStats(stats)
-        //}
+        db.statsDao().getCycleCount(0).observe(this, Observer {
+            if (it == null) viewModel.createTableToDb()
+        })
     }
 
     private fun initMinutes() {
-        maxValueWork = prepareTimerValueInt(pref.getInt(getString(R.string.max_work), 40))
-        maxValuePause = prepareTimerValueInt(pref.getInt(getString(R.string.max_pause),20))
+        maxValueWork = prepareTimerValueInt(pref.getInt(getString(R.string.max_work), 2))
+        maxValuePause = prepareTimerValueInt(pref.getInt(getString(R.string.max_pause), 1))
     }
 
     private fun observeInput(sharedViewModel: SharedViewModel) {
         sharedViewModel.getNewTimeSet().observe(this, Observer {
-            if (it == true && isReceiver) {
+            if (it && isReceiverWork) {
                 stopTimerService()
                 fabNavigate(false)
             }
@@ -121,13 +108,13 @@ class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(Ma
 
     private fun initFragment() {
         replaceFragmentInActivity(timerFragment(), R.id.container)
-        fabOnFragment = AppConstant.TIMER_FRAGMENT
+        whichFragment = TIMER_FRAGMENT
     }
 
     private fun timerFragment() = supportFragmentManager.findFragmentById(R.id.container)
             ?: TimerFragment.newInstance().apply {
                 arguments = Bundle().apply {
-                    putString(TimerFragment.ARGUMENT_FRAGMENT, intent.getStringExtra(TimerFragment.ARGUMENT_FRAGMENT))
+                    putString(ARGUMENT_FRAGMENT, intent.getStringExtra(ARGUMENT_FRAGMENT))
                 }
             }
 
@@ -147,32 +134,29 @@ class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(Ma
 
     override fun onClickFab() {
 
-        when (fabOnFragment) {
-            AppConstant.STATS_FRAGMENT -> {
+        when (whichFragment) {
+            STATS_FRAGMENT -> {
                 loadFragment(TimerFragment())
-                fabOnFragment = AppConstant.TIMER_FRAGMENT
+                whichFragment = TIMER_FRAGMENT
                 fabNavigate(isService)
 
             }
-            AppConstant.ABOUT_FRAGMENT -> {
+            ABOUT_FRAGMENT -> {
                 loadFragment(TimerFragment())
-                fabOnFragment = AppConstant.TIMER_FRAGMENT
+                whichFragment = TIMER_FRAGMENT
                 fabNavigate(isService)
 
             }
-            AppConstant.TIMER_FRAGMENT -> {
+            TIMER_FRAGMENT -> {
                 if (binding.appbar.fabAlignmentMode == BottomAppBar.FAB_ALIGNMENT_MODE_END) {
-                    isService = false
-                    fabNavigate(isService)
+                    fabNavigate(false)
                     stopTimerService()
                     pref.edit().putBoolean("isFabCenter", false).apply()
                     sharedViewModel?.isClick?.postValue(false)
 
                 } else {
-                    isService = true
-                    fabNavigate(isService)
+                    fabNavigate(true)
                     startTimer()
-                    sharedViewModel?.isClick?.postValue(true)
                 }
 
             }
@@ -181,6 +165,7 @@ class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(Ma
     }
 
     fun fabNavigate(isService: Boolean) {
+        this.isService = isService
         if (isService) {
             binding.appbar.fabAlignmentMode = BottomAppBar.FAB_ALIGNMENT_MODE_END
             binding.fabBar.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_close_black_24dp))
@@ -191,42 +176,36 @@ class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(Ma
 
     }
 
+    fun prepareTimerValueLong(time: Long) = ((time / 1000) / 60).toInt()
 
-    fun prepareTimerValueLong(time: Long): Int {
-
-        return ((time / 1000) / 60).toInt()
-    }
-
-    fun prepareTimerValueInt(time : Int): Long {
-
-        return ((time * 1000) * 60).toLong()
-    }
+    fun prepareTimerValueInt(time: Int) = ((time * 1000) * 60).toLong()
 
     private fun startTimer() {
         initMinutes()
         pref.edit().putBoolean("isFabCenter", true).apply()
         initReceiver()
         val intent = Intent(this, TimerService::class.java)
-        sharedViewModel?.remainigTimeMax?.postValue(prepareTimerValueLong(maxValueWork))
+        sharedViewModel?.apply {
+            remainigTimeMax.postValue(prepareTimerValueLong(maxValueWork))
+            isClick.postValue(true)
+        }
         intent.putExtra(getString(R.string.work), maxValueWork)
-        this.startService(intent)
-
+        startService(intent)
 
     }
 
     private fun stopTimerService() {
         stopService(Intent(this, TimerService::class.java))
-        isReceiver = false
+        isReceiverWork = false
         unregisterReceiver(updateUIReceiver)
-        sharedViewModel?.remainigTimeMax?.postValue(prepareTimerValueLong(maxValueWork))
-        sharedViewModel?.remaininTime?.postValue(prepareTimerValueLong(maxValueWork).toString())
-        sharedViewModel?.remaininTimeProgress?.postValue(prepareTimerValueLong(maxValueWork))
-
-
+        sharedViewModel?.apply {
+            remainigTimeMax.postValue(prepareTimerValueLong(maxValueWork))
+            remaininTime.postValue(prepareTimerValueLong(maxValueWork).toString())
+            remaininTimeProgress.postValue(prepareTimerValueLong(maxValueWork))
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-
         when (item?.itemId) {
             android.R.id.home -> {
                 bottomNavigationDrawerFragment.show(supportFragmentManager, "NavigationFragment")
@@ -237,13 +216,13 @@ class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(Ma
 
 
     override fun onPause() {
-        super.onPause()
         if (bottomNavigationDrawerFragment.isAdded) bottomNavigationDrawerFragment.dismiss()
+        super.onPause()
     }
 
 
     private fun initReceiver() {
-        isReceiver = true
+        isReceiverWork = true
         val intentFilter = IntentFilter()
         intentFilter.addAction(AppConstant.SERVICE_TAG)
         intentFilter.addAction(getString(R.string.work))
@@ -253,23 +232,23 @@ class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(Ma
         updateUIReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
 
-                val dataWork = intent?.getIntExtra(getString(R.string.work), -1)
-                val dataBreak = intent?.getIntExtra(getString(R.string.pause), -1)
-                var countDownTime: Int
-                var sendExtraString: String
-                var sendExtraStringFinish: String
+                val workData = intent?.getIntExtra(getString(R.string.work), -1)
+                val breakData = intent?.getIntExtra(getString(R.string.pause), -1)
+                val timerData: Int
+                val getWorkingTimeInfo: String
+                val getBreakingTimeInfo: String
 
-                countDownTime = if (dataWork!! > dataBreak!!) dataWork else dataBreak
-                sendExtraString = if (dataWork > dataBreak) getString(R.string.work) else getString(R.string.pause)
-                sendExtraStringFinish = if (dataWork > dataBreak) getString(R.string.work_finish) else getString(R.string.pause_finish)
+                timerData = if (workData!! > breakData!!) workData else breakData
+                getWorkingTimeInfo = if (workData > breakData) getString(R.string.work) else getString(R.string.pause)
+                getBreakingTimeInfo = if (workData > breakData) getString(R.string.work_finish) else getString(R.string.pause_finish)
 
-                when {
-                    intent.action.equals(sendExtraString) -> {
-                        sharedViewModel?.remaininTime?.postValue(countDownTime.toString())
-                        sharedViewModel?.remaininTimeProgress?.value = countDownTime
+                when (intent.action) {
+                    getWorkingTimeInfo -> {
+                        sharedViewModel?.remaininTime?.postValue(timerData.toString())
+                        sharedViewModel?.remaininTimeProgress?.value = timerData
                     }
-                    intent.action.equals(sendExtraStringFinish) -> {
-                        recursiveServiceStart(sendExtraStringFinish)
+                    getBreakingTimeInfo -> {
+                        recursiveServiceStart(getBreakingTimeInfo)
                         //sharedViewModel?.remaininTime?.value = dataBreak.toString()
                         //sharedViewModel?.remaininTimeProgress?.value = dataBreak
                     }
@@ -277,45 +256,30 @@ class MainActivity : BaseActivity<MainActivityViewModel, ActivityMainBinding>(Ma
             }
         }
         this.registerReceiver(updateUIReceiver, intentFilter)
-
     }
 
     private fun recursiveServiceStart(type: String) {
         val intent = Intent(this, TimerService::class.java)
-
         when (type) {
-
             getString(R.string.work_finish) -> {
                 stopService(Intent(this, TimerService::class.java))
                 sharedViewModel?.remainigTimeMax?.postValue(prepareTimerValueLong(maxValuePause))
                 sharedViewModel?.isWork?.postValue(false)
-
                 intent.putExtra(getString(R.string.pause), maxValuePause)
+                viewModel.increaseWorkCycleCount()
             }
             getString(R.string.pause_finish) -> {
                 stopService(Intent(this, TimerService::class.java))
                 sharedViewModel?.remainigTimeMax?.postValue(prepareTimerValueLong(maxValueWork))
                 sharedViewModel?.isWork?.postValue(true)
                 intent.putExtra(getString(R.string.work), maxValueWork)
-                increaseCycle()
-
             }
         }
         this.startService(intent)
-
-
     }
 
-    private fun increaseCycle() {
-        stats.id = 0
-        var cycleCount = 0
-        runBlocking {
-            /*
-            bg { cycleCount =  db.statsDao().isAnyData(0) }.await()
-            stats.cycle = cycleCount + 1
-            bg { db.statsDao().updateStats(stats) }
-            * */
-        }
+    companion object {
+        const val WORK_TIME = 120000L
+        const val BREAK_TIME = 60000L
     }
-
 }

@@ -1,4 +1,4 @@
-package com.generalmobile.assistant.base
+package com.tlgbltcn.app.workhard.core
 
 import androidx.recyclerview.widget.DiffUtil
 

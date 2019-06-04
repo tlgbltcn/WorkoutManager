@@ -1,13 +1,15 @@
 package com.tlgbltcn.app.workhard.ui.main.fragments.bottom
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.tlgbltcn.app.workhard.R
 import com.tlgbltcn.app.workhard.ui.main.fragments.about.AboutFragment
 import com.tlgbltcn.app.workhard.ui.main.fragments.stats.StatsFragment
+import com.tlgbltcn.app.workhard.utils.extensions.loadFragment
 import com.tlgbltcn.app.workhard.utils.extensions.toast
 import kotlinx.android.synthetic.main.bottom_navigationview.*
 
@@ -19,7 +21,6 @@ class BottomNavigationDrawerFragment : BottomSheetDialogFragment() {
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
         return layoutInflater.inflate(R.layout.bottom_navigationview, container, false)
     }
 
@@ -30,12 +31,12 @@ class BottomNavigationDrawerFragment : BottomSheetDialogFragment() {
             when (it.itemId) {
                 R.id.app_bar_setting -> {
                     mFragmentManager.changeFragment(STATS_FRAGMENT)
-                    loadFragment(StatsFragment())
+                    loadFragment(StatsFragment.newInstance())
                     dismiss()
                 }
                 R.id.app_bar_about -> {
                     mFragmentManager.changeFragment(ABOUT_FRAGMENT)
-                    loadFragment(AboutFragment())
+                    loadFragment(AboutFragment.newInstance())
                     dismiss()
                 }
                 R.id.app_bar_stats -> {
@@ -45,16 +46,5 @@ class BottomNavigationDrawerFragment : BottomSheetDialogFragment() {
             }
             true
         }
-    }
-
-
-    fun loadFragment(fragment : Fragment?) {
-
-        if(fragment != null){
-            fragmentManager?.beginTransaction()
-                    ?.replace(R.id.container, fragment)
-                    ?.commit()
-            }
-
     }
 }

@@ -10,7 +10,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.tlgbltcn.app.workhard.R
 
-
 fun Activity.toast(message: CharSequence, duration: Int = Toast.LENGTH_SHORT) =
         Toast.makeText(this, message, duration).show()
 
@@ -19,8 +18,6 @@ inline fun Activity.alertDialog(body: AlertDialog.Builder.() -> AlertDialog.Buil
             .body()
             .show()
 }
-
-
 
 private inline fun FragmentManager.transact(action: FragmentTransaction.() -> Unit) {
     beginTransaction().apply {

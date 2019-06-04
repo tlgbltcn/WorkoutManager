@@ -1,7 +1,8 @@
 package com.tlgbltcn.app.workhard.ui.main.fragments.timer
 
 import android.app.AlertDialog
-import android.content.*
+import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.LayoutInflater
@@ -17,11 +18,9 @@ import com.tlgbltcn.app.workhard.core.BaseFragment
 import com.tlgbltcn.app.workhard.databinding.FragmentTimerBinding
 import com.tlgbltcn.app.workhard.ui.main.SharedViewModel
 import kotlinx.android.synthetic.main.dialog_set_time.view.*
-import org.jetbrains.anko.sdk25.coroutines.onClick
 import javax.inject.Inject
 
 class TimerFragment : BaseFragment<TimerFragmentViewModel, FragmentTimerBinding>(TimerFragmentViewModel::class.java), TimerFragmentCallBack {
-
 
     @Inject
     lateinit var pref: SharedPreferences
@@ -52,15 +51,15 @@ class TimerFragment : BaseFragment<TimerFragmentViewModel, FragmentTimerBinding>
     }
 
     private fun initTimes() {
-        workTime =  pref.getInt("maxWork",40)
-        pauseTime = pref.getInt("maxPause",10)
+        workTime = pref.getInt(MAX_WORK, DEFAULT_WORK)
+        pauseTime = pref.getInt(MAX_PAUSE, DEFAULT_PAUSE)
     }
 
     private fun observeInput(sharedViewModel: SharedViewModel) {
 
         with(sharedViewModel) {
             isOnClick().observe(this@TimerFragment, Observer {
-                if (it == true) startTimer() else stopTimer()
+                if (it) startTimer() else stopTimer()
             })
 
             getRemainingTimeMax().observe(this@TimerFragment, Observer {
@@ -77,14 +76,12 @@ class TimerFragment : BaseFragment<TimerFragmentViewModel, FragmentTimerBinding>
 
             getIsWork().observe(this@TimerFragment, Observer {
                 mBinding.viewModel?.isWork?.set(it)
-                if (it == true) mBinding.circularProgress.externalColor = ContextCompat.getColor(view?.context!!, R.color.windowBackground)
+                if (it) mBinding.circularProgress.externalColor = ContextCompat.getColor(view?.context!!, R.color.windowBackground)
                 else mBinding.circularProgress.externalColor = ContextCompat.getColor(view?.context!!, R.color.colorAccent)
             })
         }
 
     }
-
-
 
     override fun setTime() {
 
@@ -92,16 +89,20 @@ class TimerFragment : BaseFragment<TimerFragmentViewModel, FragmentTimerBinding>
         layout.number_of_time_period_pause.text = pauseTime.toString()
         layout.number_of_time_period.text = workTime.toString()
 
-        layout.minus_work.onClick { workTime--
+        layout.minus_work.setOnClickListener {
+            workTime--
             layout.number_of_time_period.text = workTime.toString()
         }
-        layout.plus_work.onClick { workTime++
+        layout.plus_work.setOnClickListener {
+            workTime++
             layout.number_of_time_period.text = workTime.toString()
         }
-        layout.minus_pause.onClick { pauseTime--
+        layout.minus_pause.setOnClickListener {
+            pauseTime--
             layout.number_of_time_period_pause.text = pauseTime.toString()
         }
-        layout.plus_pause.onClick { pauseTime++
+        layout.plus_pause.setOnClickListener {
+            pauseTime++
             layout.number_of_time_period_pause.text = pauseTime.toString()
         }
         val alertDialog = AlertDialog.Builder(activity)
@@ -113,7 +114,7 @@ class TimerFragment : BaseFragment<TimerFragmentViewModel, FragmentTimerBinding>
     }
 
     private fun startTimer() {
-        // mBinding.viewModel!!.initializedText()
+        //mBinding.viewModel!!.initializedText(40)
     }
 
 
@@ -127,8 +128,8 @@ class TimerFragment : BaseFragment<TimerFragmentViewModel, FragmentTimerBinding>
             when(i){
                 DialogInterface.BUTTON_POSITIVE -> {
                     sharedViewModel.isNewTimeSet.postValue(true)
-                    pref.edit().putInt("maxWork",workTime).apply()
-                    pref.edit().putInt("maxPause", pauseTime).apply()
+                    pref.edit().putInt(MAX_WORK, workTime).apply()
+                    pref.edit().putInt(MAX_PAUSE, pauseTime).apply()
                     mBinding.viewModel?.remainingTime?.set(workTime.toString())
                     mBinding.viewModel?.remaininTimeMax?.set(workTime)
                     mBinding.viewModel?.remainingTimeProgress?.set(workTime)
@@ -141,9 +142,11 @@ class TimerFragment : BaseFragment<TimerFragmentViewModel, FragmentTimerBinding>
 
 
     companion object {
-        const val ARGUMENT_FRAGMENT = "FRAGMENT_A"
+        const val ARGUMENT_FRAGMENT = "TIMER"
+        const val MAX_WORK = "maxWork"
+        const val MAX_PAUSE = "maxPause"
+        const val DEFAULT_WORK = 52
+        const val DEFAULT_PAUSE = 52
         fun newInstance() = TimerFragment()
     }
-
-
 }

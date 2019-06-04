@@ -1,6 +1,7 @@
 package com.tlgbltcn.app.workhard
 
 import androidx.multidex.MultiDexApplication
+import com.facebook.stetho.Stetho
 import com.tlgbltcn.app.workhard.di.component.DaggerApplicationComponent
 import com.tlgbltcn.app.workhard.di.module.ApplicationModule
 import com.tlgbltcn.app.workhard.di.module.DatabaseModule
@@ -14,6 +15,11 @@ class App : MultiDexApplication() {
                 .databaseModule(DatabaseModule())
                 .netModule(NetModule())
                 .build()
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        Stetho.initializeWithDefaults(this)
     }
 }
 

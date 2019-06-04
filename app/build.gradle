@@ -1,5 +1,3 @@
-
-
 apply plugin: 'com.android.application'
 
 apply plugin: 'kotlin-android'
@@ -9,7 +7,6 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 apply plugin: "androidx.navigation.safeargs"
-
 
 def STRING = 'String'
 def BUILD_TIME = 'BUILD_TIME'
@@ -30,7 +27,7 @@ android {
         multiDexEnabled true
         versionName "1.0.0"
         vectorDrawables.useSupportLibrary = true
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField STRING, BUILD_TIME, "\"${rootProject.ext.buildTime}\""
     }
 
@@ -50,8 +47,8 @@ android {
         }
 
     }
-    sourceSets{
-	main.java.srcDirs += 'src/main/kotlin'
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
     }
     packagingOptions {
         exclude 'META-INF/rxjava.properties'
@@ -64,8 +61,6 @@ android {
         sourceCompatibility 1.8
         targetCompatibility 1.8
     }
-
-
 }
 
 dependencies {
@@ -85,21 +80,14 @@ dependencies {
 
     //picasso
     implementation rootProject.ext.picasso
-    
-
-    //coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.0"
-            
-    // anko
-    implementation "org.jetbrains.anko:anko:$anko_version"
-    implementation "org.jetbrains.anko:anko-coroutines:$anko_version"
 
     def lifecycle_version = "2.0.0-beta01"
 
     // ViewModel and LiveData
-    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-extensions:2.2.0-alpha01"
     // alternatively - just ViewModel
-    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version" // use -ktx for Kotlin
+    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
+    // use -ktx for Kotlin
     // alternatively - just LiveData
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
     // alternatively - Lifecycles only (no ViewModel or LiveData). Some UI
@@ -112,39 +100,49 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
 
     // optional - ReactiveStreams support for LiveData
-    implementation "androidx.lifecycle:lifecycle-reactivestreams:$lifecycle_version" // use -ktx for Kotlin
+    implementation "androidx.lifecycle:lifecycle-reactivestreams:2.2.0-alpha01"
+    // use -ktx for Kotlin
 
     // optional - Test helpers for LiveData
     testImplementation "androidx.arch.core:core-testing:$lifecycle_version"
     def room_version = "2.0.0-beta01"
 
-    implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-runtime:2.1.0-rc01"
+    implementation "androidx.room:room-ktx:2.1.0-rc01"
     kapt "androidx.room:room-compiler:$room_version" // use kapt for Kotlin
-61
-    implementation 'com.android.support:multidex:1.0.3'
 
-    implementation 'com.google.android.material:material:1.0.0-beta01'
+    implementation 'androidx.multidex:multidex:2.0.1'
 
-    implementation 'androidx.appcompat:appcompat:1.0.0-beta01'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.2'
+    implementation 'com.google.android.material:material:1.1.0-alpha07'
 
+    implementation 'androidx.appcompat:appcompat:1.1.0-alpha05'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 
     implementation "com.google.dagger:dagger-android-support:$daggerVersion"
     implementation "com.google.dagger:dagger:$daggerVersion"
 
     implementation 'com.github.glomadrian:DashedCircularProgress:1.0@aar'
 
+    //coroutines
+    implementation 'androidx.core:core-ktx:1.0.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0-alpha01"
 
-    def nav_version = "1.0.0-alpha05"
-    implementation "android.arch.navigation:navigation-fragment:$nav_version" // use -ktx for Kotlin
-    implementation "android.arch.navigation:navigation-ui:$nav_version"
+    def nav_version = "1.0.0"
+    implementation 'androidx.navigation:navigation-fragment:2.1.0-alpha04' // use -ktx for Kotlin
+    implementation 'androidx.navigation:navigation-ui:2.1.0-alpha04'
 
-    kapt 'com.google.dagger:dagger-android-processor:2.16'
-    kapt 'com.google.dagger:dagger-compiler:2.16'
+    kapt 'com.google.dagger:dagger-android-processor:2.22.1'
+    kapt 'com.google.dagger:dagger-compiler:2.22.1'
+    kapt "androidx.lifecycle:lifecycle-compiler:2.0.0"
+
+    implementation 'com.facebook.stetho:stetho:1.5.1'
+
     //test
     testImplementation 'junit:junit:4.12'
 
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.1', {
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.google.code.findbugs'
     })

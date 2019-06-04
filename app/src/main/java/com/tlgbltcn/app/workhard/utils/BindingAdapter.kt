@@ -11,5 +11,4 @@ object BindingAdapter {
         progressBar.max = 40F
         progressBar.setValue(percent.toFloat())
     }
-
 }

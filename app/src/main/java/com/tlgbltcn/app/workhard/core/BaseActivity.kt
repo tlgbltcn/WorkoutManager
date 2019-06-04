@@ -1,6 +1,5 @@
 package com.tlgbltcn.app.workhard.core
 
-
 import android.os.Bundle
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
@@ -31,8 +30,6 @@ abstract class BaseActivity<VM : BaseViewModel, DB : ViewDataBinding>(private va
         initViewModel(viewModel)
         onInject()
         super.onCreate(savedInstanceState)
-
-
     }
 
     /**

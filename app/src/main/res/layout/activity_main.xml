@@ -46,8 +46,8 @@
             app:layout_scrollFlags="scroll|enterAlways"
             app:menu="@menu/bottomappbar_menu"
             app:navigationIcon="@drawable/ic_menu_24dp"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
+            app:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_bar"

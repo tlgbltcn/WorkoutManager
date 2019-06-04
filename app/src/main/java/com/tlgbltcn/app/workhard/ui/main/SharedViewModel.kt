@@ -3,7 +3,6 @@ package com.tlgbltcn.app.workhard.ui.main
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-
 class SharedViewModel : ViewModel() {
 
     var isClick = MutableLiveData<Boolean>()
@@ -18,14 +17,9 @@ class SharedViewModel : ViewModel() {
     fun getRemainingTimeMax() = remainigTimeMax
     fun getIsWork() = isWork
     fun getNewTimeSet() = isNewTimeSet
-    fun isOnClick(): MutableLiveData<Boolean> {
+    fun isOnClick() = isClick
 
-        if (isClick == null) {
-            isClick = MutableLiveData()
-        }
-        return isClick
+    init {
     }
-
-
 
 }

@@ -4,7 +4,6 @@ import android.view.ViewGroup
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.generalmobile.assistant.base.BaseDiffCallback
 import com.tlgbltcn.app.workhard.R
 
 abstract class BaseAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>() {

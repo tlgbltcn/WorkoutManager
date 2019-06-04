@@ -19,4 +19,8 @@ class AboutFragment : BaseFragment<AboutFragmentViewModel, FragmentAboutBinding>
 
         return result
     }
+
+    companion object {
+        fun newInstance() = AboutFragment()
+    }
 }
